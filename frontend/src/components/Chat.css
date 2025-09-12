@@ -10,6 +10,9 @@
 }
 
 .chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 1rem 1.5rem;
   border-bottom: 1px solid var(--border-color);
   background: var(--bg-secondary);
@@ -267,6 +270,74 @@
 
 .send-button.active:active {
   transform: scale(0.95);
+}
+
+.chat-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.clear-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clear-button:hover:not(:disabled) {
+  background: #ef4444;
+  color: white;
+  transform: scale(1.05);
+}
+
+.clear-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.stop-button {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: #ef4444;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.stop-button:hover {
+  background: #dc2626;
+  transform: scale(1.05);
+}
+
+.stop-button:active {
+  transform: scale(0.95);
+}
+
+.cursor-blink {
+  animation: blink 1s infinite;
+  color: var(--accent-color);
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.message-text.streaming {
+  position: relative;
 }
 
 @media (max-width: 768px) {
