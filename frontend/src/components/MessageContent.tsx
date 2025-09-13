@@ -21,6 +21,13 @@ const IMAGE_DOMAIN_PATTERNS = [
   'upload', 'storage', 'blob', 'cloudinary', 'amazonaws', 'googleusercontent'
 ];
 
+// 辅助函数：保护图片链接不被CSS换行破坏
+const protectImageUrls = (text: string): string => {
+  // 不修改 URL 本身，而是依赖 CSS 来处理换行
+  // 这里只是标记，实际的保护通过 CSS 和 React 组件实现
+  return text;
+};
+
 // 辅助函数：检测并隐藏流式传输中的图片链接
 const hideStreamingImageLinks = (text: string): string => {
   let processed = text;
@@ -96,6 +103,9 @@ const MessageContent: React.FC<MessageContentProps> = ({ content, isStreaming })
           }
         });
       }
+      
+      // 保护图片 URL 不被 CSS 强制换行破坏
+      processed = protectImageUrls(processed);
     }
 
     setDetectedImages(imageUrls);
@@ -122,28 +132,59 @@ const MessageContent: React.FC<MessageContentProps> = ({ content, isStreaming })
     img: ({ src, alt, ...props }: any) => {
       const [imageLoaded, setImageLoaded] = useState(false);
       const [imageError, setImageError] = useState(false);
+      const [showPlaceholder, setShowPlaceholder] = useState(true);
+      
+      // 清理 URL 中可能的零宽度字符和其他不可见字符
+      const cleanSrc = src ? src.replace(/[\u200B\u200C\u200D\uFEFF]/g, '').trim() : src;
+      
+      // 检查 URL 是否有效
+      const isValidUrl = cleanSrc && (cleanSrc.startsWith('http://') || cleanSrc.startsWith('https://'));
+      
+      if (!isValidUrl) {
+        return (
+          <div className="image-error">
+            无效的图片链接: {alt || '未知图片'}
+            <br />
+            <small style={{ color: 'var(--text-muted)', fontSize: '0.75em' }}>
+              URL: {cleanSrc}
+            </small>
+          </div>
+        );
+      }
       
       return (
-        <div className="message-image-container">
-          {!imageLoaded && !imageError && (
+        <div className="message-image-container" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
+          {showPlaceholder && !imageLoaded && !imageError && (
             <ImagePlaceholder text="加载图片中" />
           )}
           <img 
-            src={src} 
+            src={cleanSrc} 
             alt={alt || '生成的图片'} 
             className={`message-image ${imageLoaded ? 'loaded' : 'loading'}`}
-            loading="lazy"
-            onLoad={() => setImageLoaded(true)}
-            onError={() => {
+            onLoad={() => {
+              setImageLoaded(true);
+              setShowPlaceholder(false);
+              setImageError(false);
+            }}
+            onError={(e) => {
+              console.warn('图片加载失败:', cleanSrc);
               setImageError(true);
+              setShowPlaceholder(false);
               setImageLoaded(false);
             }}
-            style={{ display: imageLoaded ? 'block' : 'none' }}
+            style={{ 
+              display: imageLoaded ? 'block' : (imageError ? 'none' : 'block'),
+              opacity: imageLoaded ? 1 : 0
+            }}
             {...props}
           />
           {imageError && (
             <div className="image-error">
-              图片加载失败: {alt || '未知图片'}
+              图片加载失败: {alt || '生成的图片'}
+              <br />
+              <small style={{ color: 'var(--text-muted)', fontSize: '0.75em' }}>
+                请检查链接是否有效: {cleanSrc}
+              </small>
             </div>
           )}
         </div>
@@ -151,17 +192,30 @@ const MessageContent: React.FC<MessageContentProps> = ({ content, isStreaming })
     },
     
     // 自定义链接渲染
-    a: ({ href, children, ...props }: any) => (
-      <a 
-        href={href} 
-        target="_blank" 
-        rel="noopener noreferrer" 
-        className="message-link"
-        {...props}
-      >
-        {children}
-      </a>
-    ),
+    a: ({ href, children, ...props }: any) => {
+      // 清理 URL 中的不可见字符
+      const cleanHref = href ? href.replace(/[\u200B\u200C\u200D\uFEFF]/g, '').trim() : href;
+      
+      // 检查是否是图片链接
+      const isImageLink = cleanHref && (
+        /\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i.test(cleanHref) ||
+        cleanHref.includes('image') ||
+        cleanHref.includes('img') ||
+        cleanHref.includes('pic')
+      );
+      
+      return (
+        <a 
+          href={cleanHref} 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className={`message-link ${isImageLink ? 'image-link' : ''}`}
+          {...props}
+        >
+          {children}
+        </a>
+      );
+    },
     
     // 自定义代码块渲染
     code: ({ node, inline, className, children, ...props }: any) => {

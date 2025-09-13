@@ -45,6 +45,29 @@
   white-space: pre-wrap;
 }
 
+/* 特殊处理：保护图片 markdown 语法不被破坏 */
+.message-markdown p:has(img),
+.message-markdown p:has(.message-image),
+.message-markdown p:has(.message-image-container) {
+  /* 对于包含图片的段落，禁用强制换行 */
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+  white-space: normal !important;
+}
+
+/* 为包含图片链接的段落添加特殊样式 */
+.message-markdown p:has(a[href*=".jpg"]),
+.message-markdown p:has(a[href*=".jpeg"]),
+.message-markdown p:has(a[href*=".png"]),
+.message-markdown p:has(a[href*=".gif"]),
+.message-markdown p:has(a[href*=".webp"]),
+.message-markdown p:has(a[href*=".svg"]),
+.message-markdown p:has(a.image-link) {
+  /* 包含图片链接的段落也要保护 */
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+}
+
 .message-markdown ul,
 .message-markdown ol {
   margin: 0.5em 0;
@@ -61,16 +84,44 @@
   text-decoration: none;
   border-bottom: 1px solid transparent;
   transition: border-color 0.2s ease;
+  /* 防止链接被强制换行破坏 */
+  word-break: keep-all;
+  white-space: nowrap;
+  overflow-wrap: normal;
 }
 
 .message-link:hover {
   border-bottom-color: var(--accent-color);
 }
 
+/* 图片链接特殊处理 */
+.message-link.image-link,
+.message-link[href*=".jpg"],
+.message-link[href*=".jpeg"], 
+.message-link[href*=".png"],
+.message-link[href*=".gif"],
+.message-link[href*=".webp"],
+.message-link[href*=".svg"],
+.message-link[href*="image"],
+.message-link[href*="img"] {
+  /* 图片链接绝对不能换行 */
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+  overflow-wrap: normal !important;
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* 图片样式 */
 .message-image-container {
   margin: 1em 0;
   text-align: center;
+  /* 确保图片容器不会因为长URL被破坏 */
+  overflow: hidden;
+  word-break: normal;
+  white-space: normal;
 }
 
 .message-image {
@@ -79,6 +130,9 @@
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
   transition: all 0.3s ease;
+  /* 确保图片本身正常显示 */
+  display: block;
+  margin: 0 auto;
 }
 
 .message-image.loading {
