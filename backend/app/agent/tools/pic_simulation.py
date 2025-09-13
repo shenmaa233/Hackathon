@@ -96,10 +96,10 @@ class PICSimulation(BaseTool):
                 grid_size=grid_size
             )
             
-            # 生成GIF动画
+            # Generate GIF animation
             gif_path = self._generate_gif_animation(result, simulation_type)
             
-            # 为AI准备概览数据
+            # Prepare summary data for AI
             summary_data = {
                 'frames_count': len(result["frames"]),
                 'simulation_params': result['simulation_params'],
@@ -109,7 +109,7 @@ class PICSimulation(BaseTool):
             return json.dumps({
                 'success': True,
                 'simulation_type': simulation_type,
-                'message': f'PIC模拟完成！生成了{len(result["frames"])}帧数据。\n\n![PIC模拟动画]({summary_data["gif_url"]})\n\n模拟展示了{simulation_type}类型的等离子体现象。',
+                'message': f'PIC simulation completed! {len(result["frames"])} frames generated.\n\n![PIC Simulation Animation]({summary_data["gif_url"]})\n\nThe simulation demonstrates plasma phenomena of type: {simulation_type}.',
                 'data': summary_data,
                 'gif_url': summary_data["gif_url"]
             }, ensure_ascii=False)
@@ -236,25 +236,25 @@ class PICSimulation(BaseTool):
         }
     
     def _generate_gif_animation(self, simulation_data: Dict[str, Any], simulation_type: str) -> str:
-        """生成PIC模拟的GIF动画"""
+        """Generate GIF animation for PIC simulation"""
         try:
             frames = simulation_data['frames']
             if not frames:
                 return None
             
-            # 创建输出目录
+            # Create output directory
             output_dir = '/home/shenmaa/codes/Hackathon/backend/static'
             os.makedirs(output_dir, exist_ok=True)
             
-            # 生成唯一文件名
+            # Generate unique filename
             import time
             timestamp = int(time.time())
             gif_filename = f'pic_simulation_{simulation_type}_{timestamp}.gif'
             gif_path = os.path.join(output_dir, gif_filename)
             
-            # 设置图形
+            # Set up figure
             fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(12, 10))
-            fig.suptitle(f'PIC模拟: {simulation_type}', fontsize=16)
+            fig.suptitle(f'PIC Simulation: {simulation_type}', fontsize=16)
             
             def animate(frame_idx):
                 if frame_idx >= len(frames):
@@ -262,56 +262,56 @@ class PICSimulation(BaseTool):
                     
                 frame = frames[frame_idx]
                 
-                # 清除所有子图
+                # Clear all subplots
                 ax1.clear()
                 ax2.clear()
                 ax3.clear()
                 ax4.clear()
                 
-                # 相空间图
+                # Phase space plot
                 beam1_pos = np.array(frame['phase_space']['beam1']['positions'])
                 beam1_vel = np.array(frame['phase_space']['beam1']['velocities'])
                 beam2_pos = np.array(frame['phase_space']['beam2']['positions'])
                 beam2_vel = np.array(frame['phase_space']['beam2']['velocities'])
                 
-                ax1.scatter(beam1_pos, beam1_vel, c='blue', alpha=0.6, s=1, label='束1')
-                ax1.scatter(beam2_pos, beam2_vel, c='red', alpha=0.6, s=1, label='束2')
-                ax1.set_xlabel('位置')
-                ax1.set_ylabel('速度')
-                ax1.set_title('相空间分布')
+                ax1.scatter(beam1_pos, beam1_vel, c='blue', alpha=0.6, s=1, label='Beam 1')
+                ax1.scatter(beam2_pos, beam2_vel, c='red', alpha=0.6, s=1, label='Beam 2')
+                ax1.set_xlabel('Position')
+                ax1.set_ylabel('Velocity')
+                ax1.set_title('Phase Space Distribution')
                 ax1.legend()
                 ax1.grid(True, alpha=0.3)
                 
-                # 位置分布
-                ax2.hist(beam1_pos, bins=50, alpha=0.7, color='blue', label='束1')
-                ax2.hist(beam2_pos, bins=50, alpha=0.7, color='red', label='束2')
-                ax2.set_xlabel('位置')
-                ax2.set_ylabel('粒子数')
-                ax2.set_title('位置分布')
+                # Position distribution
+                ax2.hist(beam1_pos, bins=50, alpha=0.7, color='blue', label='Beam 1')
+                ax2.hist(beam2_pos, bins=50, alpha=0.7, color='red', label='Beam 2')
+                ax2.set_xlabel('Position')
+                ax2.set_ylabel('Particle Count')
+                ax2.set_title('Position Distribution')
                 ax2.legend()
                 
-                # 电场
+                # Electric field
                 x_grid = np.linspace(0, frame['grid_info']['L'], len(frame['fields']['electric_field']))
                 ax3.plot(x_grid, frame['fields']['electric_field'], 'g-', linewidth=2)
-                ax3.set_xlabel('位置')
-                ax3.set_ylabel('电场强度')
-                ax3.set_title('电场分布')
+                ax3.set_xlabel('Position')
+                ax3.set_ylabel('Electric Field')
+                ax3.set_title('Electric Field Distribution')
                 ax3.grid(True, alpha=0.3)
                 
-                # 电荷密度
+                # Charge density
                 ax4.plot(x_grid, frame['fields']['charge_density'], 'm-', linewidth=2)
-                ax4.set_xlabel('位置')
-                ax4.set_ylabel('电荷密度')
-                ax4.set_title('电荷密度分布')
+                ax4.set_xlabel('Position')
+                ax4.set_ylabel('Charge Density')
+                ax4.set_title('Charge Density Distribution')
                 ax4.grid(True, alpha=0.3)
                 
-                # 添加时间信息
-                fig.suptitle(f'PIC模拟: {simulation_type} (t={frame["time"]:.2f})', fontsize=16)
+                # Add time info
+                fig.suptitle(f'PIC Simulation: {simulation_type} (t={frame["time"]:.2f})', fontsize=16)
                 
                 plt.tight_layout()
             
-            # 创建动画（选择部分帧以减少文件大小）
-            frame_step = max(1, len(frames) // 30)  # 最多30帧
+            # Create animation (select a subset of frames to reduce file size)
+            frame_step = max(1, len(frames) // 30)  # Up to 30 frames
             selected_frames = list(range(0, len(frames), frame_step))
             
             anim = animation.FuncAnimation(
@@ -319,13 +319,13 @@ class PICSimulation(BaseTool):
                 interval=200, repeat=True, blit=False
             )
             
-            # 保存GIF
+            # Save GIF
             anim.save(gif_path, writer='pillow', fps=5, dpi=80)
             plt.close(fig)
             
-            print(f"GIF已保存到: {gif_path}")
+            print(f"GIF saved to: {gif_path}")
             return gif_path
             
         except Exception as e:
-            print(f"生成GIF时出错: {e}")
+            print(f"Error generating GIF: {e}")
             return None
