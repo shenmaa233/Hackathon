@@ -2,10 +2,22 @@
 .message-content-wrapper {
   position: relative;
   line-height: 1.6;
+  /* 强制长文本换行 */
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  /* 防止水平溢出 */
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 .message-markdown {
   color: inherit;
+  /* 确保 Markdown 内容也能正确换行 */
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
 }
 
 .message-markdown h1,
@@ -26,6 +38,11 @@
 
 .message-markdown p {
   margin: 0.5em 0;
+  /* 段落内容强制换行 */
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 .message-markdown ul,
@@ -97,6 +114,10 @@
   font-size: 0.875em;
   color: var(--text-primary);
   border: 1px solid var(--border-color);
+  /* 行内代码也要能换行 */
+  word-wrap: break-word;
+  word-break: break-all;
+  overflow-wrap: break-word;
 }
 
 /* 代码块样式 */
@@ -149,6 +170,11 @@
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
   font-size: 0.875em;
   line-height: 1.5;
+  /* 代码块内容换行设置 */
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  word-break: break-all;
+  overflow-wrap: break-word;
 }
 
 .code-block-container code {
@@ -165,6 +191,8 @@
   overflow-x: auto;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
+  /* 确保表格容器不会超出父容器 */
+  max-width: 100%;
 }
 
 .message-table {
@@ -178,6 +206,11 @@
   padding: 0.75em;
   text-align: left;
   border-bottom: 1px solid var(--border-color);
+  /* 表格单元格内容换行 */
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  max-width: 200px; /* 限制单元格最大宽度 */
 }
 
 .message-table th {

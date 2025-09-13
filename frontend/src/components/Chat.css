@@ -110,6 +110,8 @@
   display: flex;
   gap: 0.75rem;
   max-width: 100%;
+  /* 防止消息容器被撑开 */
+  min-width: 0;
 }
 
 .message.user {
@@ -142,6 +144,9 @@
 .message-content {
   flex: 1;
   min-width: 0;
+  /* 确保内容不会超出容器宽度 */
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .message.user .message-content {
@@ -156,7 +161,13 @@
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-color);
   max-width: 80%;
+  /* 强制换行设置 */
   word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  /* 防止水平溢出 */
+  overflow-x: hidden;
   line-height: 1.5;
   font-size: 0.875rem;
 }
@@ -386,9 +397,18 @@
   
   .message-text {
     max-width: 90%;
+    /* 移动端更严格的换行 */
+    word-break: break-all;
+    overflow-wrap: anywhere;
   }
   
   .input-form {
     padding: 1rem;
+  }
+  
+  /* 移动端特殊处理长文本 */
+  .message-content {
+    word-break: break-all;
+    overflow-wrap: anywhere;
   }
 }
