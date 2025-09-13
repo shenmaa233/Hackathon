@@ -4,6 +4,9 @@ from typing import AsyncGenerator, Dict, Any, List, Optional
 from qwen_agent.agents import Assistant
 import logging
 
+# 导入工具以确保它们被注册
+from app.agent.tools import PICSimulation
+
 # 配置日志记录器
 logger = logging.getLogger(__name__)
 
@@ -28,8 +31,21 @@ class LLMService:
             }
         }
         
-        self.tools = ['image_gen']
-        self.system = '你是一个智能助手，可以回答用户的问题并生成图片。请用中文回复用户。'
+        self.tools = ['image_gen', 'pic_simulation']
+        self.system = '''你是一个智能助手，可以回答用户的问题、生成图片和进行等离子体物理模拟。
+
+你有以下工具可以使用：
+1. image_gen - 生成图片
+2. pic_simulation - 进行Particle-in-Cell等离子体物理模拟
+
+当用户询问关于等离子体、电子束、相空间、电场模拟等物理现象时，你可以使用pic_simulation工具进行模拟演示。
+
+支持的模拟类型：
+- two_stream: 双电子束不稳定性模拟
+- single_beam: 单电子束模拟  
+- landau_damping: 朗道阻尼模拟
+
+请用中文回复用户。'''
         
         # 初始化 qwen-agent 助手
         self.bot = Assistant(

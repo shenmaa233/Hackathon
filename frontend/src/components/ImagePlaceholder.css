@@ -1,0 +1,108 @@
+.image-placeholder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 1rem 0;
+  padding: 2rem;
+  background: var(--bg-secondary);
+  border: 2px dashed var(--border-color);
+  border-radius: var(--radius-lg);
+  min-height: 200px;
+  position: relative;
+  overflow: hidden;
+}
+
+.image-placeholder::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(16, 163, 127, 0.1), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.image-placeholder-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  z-index: 1;
+}
+
+.image-placeholder-icon {
+  color: var(--accent-color);
+  animation: pulse-icon 2s ease-in-out infinite;
+}
+
+@keyframes pulse-icon {
+  0%, 100% { 
+    opacity: 0.6; 
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 1; 
+    transform: scale(1.1);
+  }
+}
+
+.image-placeholder-text {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-align: center;
+}
+
+.image-placeholder-progress {
+  width: 200px;
+  height: 4px;
+  background: var(--bg-tertiary);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-color), #20b2aa);
+  border-radius: 2px;
+  animation: progress 3s ease-in-out infinite;
+}
+
+@keyframes progress {
+  0% { 
+    width: 0%; 
+    transform: translateX(0);
+  }
+  50% { 
+    width: 70%; 
+    transform: translateX(0);
+  }
+  100% { 
+    width: 100%; 
+    transform: translateX(0);
+  }
+}
+
+/* 深色主题适配 */
+[data-theme="dark"] .image-placeholder {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .image-placeholder {
+    min-height: 150px;
+    padding: 1.5rem;
+  }
+  
+  .image-placeholder-progress {
+    width: 150px;
+  }
+}

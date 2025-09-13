@@ -74,10 +74,45 @@ async def message(sid, data):
         async for chunk in llm_service.generate_response_stream(session_id, user_message):
             if chunk:
                 full_response += chunk
+                
+                # 检查是否包含PIC模拟数据
+                pic_data = None
+                if '"visualization_type": "pic_simulation"' in chunk:
+                    try:
+                        # 提取PIC模拟数据
+                        import json
+                        import re
+                        json_match = re.search(r'\{.*"visualization_type":\s*"pic_simulation".*\}', chunk, re.DOTALL)
+                        if json_match:
+                            pic_data = json.loads(json_match.group())
+                            logger.info(f"Extracted PIC data with {len(pic_data.get('data', {}).get('frames', []))} frames")
+                    except Exception as e:
+                        logger.error(f"Failed to parse PIC data: {e}")
+                
                 await sio.emit("response_chunk", {
                     "chunk": chunk,
-                    "full_response": full_response  # 发送累计的完整响应，方便前端直接渲染
+                    "full_response": full_response,
+                    "pic_data": pic_data
                 }, room=sid)
+                
+                # 如果有PIC数据，发送canvas展开信号
+                if pic_data:
+                    # 获取完整的模拟数据
+                    full_simulation_data = pic_data
+                    if pic_data.get('full_data_available'):
+                        # 尝试从工具实例获取完整数据
+                        from app.agent.tools.pic_simulation import PICSimulation
+                        try:
+                            # 这里需要找到正确的工具实例
+                            # 暂时使用概览数据，后续可以优化
+                            pass
+                        except:
+                            pass
+                    
+                    await sio.emit("canvas_expand", {
+                        "simulation_data": full_simulation_data
+                    }, room=sid)
+                    logger.info(f"Sent canvas_expand event with PIC data")
 
         await sio.emit("generation_completed", {"final_response": full_response}, room=sid)
         

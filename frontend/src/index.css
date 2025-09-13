@@ -41,6 +41,7 @@
 html {
   font-size: 16px;
   scroll-behavior: smooth;
+  height: 100%; /* 确保html高度 */
 }
 
 body {
@@ -53,10 +54,12 @@ body {
   color: var(--text-primary);
   line-height: 1.6;
   transition: background-color 0.3s ease, color 0.3s ease;
+  height: 100%; /* 确保body高度 */
+  overflow: hidden; /* 防止body滚动 */
 }
 
 #root {
-  min-height: 100vh;
+  height: 100vh; /* 固定高度，不使用min-height */
   display: flex;
   flex-direction: column;
 }

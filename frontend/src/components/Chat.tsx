@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
+import MessageContent from './MessageContent';
+import TypingIndicator from './TypingIndicator';
 import './Chat.css';
 
 interface Message {
@@ -8,6 +10,11 @@ interface Message {
   type: 'user' | 'assistant';
   timestamp: Date;
   isStreaming?: boolean;
+}
+
+interface ChatProps {
+  onCanvasExpand: (data: any) => void;
+  isCanvasExpanded: boolean;
 }
 
 // 1. 在组件外部创建 socket 实例，防止在 React 严格模式下重复创建和销毁
@@ -19,7 +26,7 @@ const socket: Socket = io(backendUrl, {
   autoConnect: false, 
 });
 
-const Chat: React.FC = () => {
+const Chat: React.FC<ChatProps> = ({ onCanvasExpand, isCanvasExpanded }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -116,6 +123,11 @@ const Chat: React.FC = () => {
         console.log('History cleared by server confirmation.');
     };
 
+    const handleCanvasExpand = (data: any) => {
+        console.log('Canvas expand requested with data:', data);
+        onCanvasExpand(data.simulation_data);
+    };
+
     // 绑定事件
     socket.on('connect', handleConnect);
     socket.on('disconnect', handleDisconnect);
@@ -125,6 +137,7 @@ const Chat: React.FC = () => {
     socket.on('generation_stopped', handleGenerationStopped);
     socket.on('error', handleError);
     socket.on('history_cleared', handleHistoryCleared);
+    socket.on('canvas_expand', handleCanvasExpand);
 
     // 清理函数：只移除事件监听器，不主动断开连接
     return () => {
@@ -136,12 +149,32 @@ const Chat: React.FC = () => {
       socket.off('generation_stopped', handleGenerationStopped);
       socket.off('error', handleError);
       socket.off('history_cleared', handleHistoryCleared);
+      socket.off('canvas_expand', handleCanvasExpand);
     };
   }, []); // 空依赖数组确保这个 effect 只运行一次
 
+  // 追踪用户是否在底部
+  const [autoScroll, setAutoScroll] = useState(true);
+
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (autoScroll) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+    }
   }, [messages]);
+
+  // 监听用户是否滚动离开底部
+  useEffect(() => {
+    const container = document.querySelector('.messages-container');
+    if (!container) return;
+
+    const handleScroll = () => {
+      const isBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 10;
+      setAutoScroll(isBottom);
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const sendMessage = () => {
     if (!input.trim() || isLoading || isGenerating) return;
@@ -232,9 +265,20 @@ const Chat: React.FC = () => {
                         <div key={message.id} className={`message ${message.type} fade-in`}>
                             {/* ... Message structure ... */}
                             <div className="message-content">
-                                <div className={`message-text ${message.isStreaming ? 'streaming' : ''}`}>
-                                    {message.content}
-                                    {message.isStreaming && <span className="cursor-blink">▋</span>}
+                                <div className="message-text">
+                                    {message.type === 'user' ? (
+                                        <div className="user-message-content">{message.content}</div>
+                                    ) : (
+                                        // 如果是AI消息且没有内容且正在流式传输，显示等待动画
+                                        !message.content && message.isStreaming ? (
+                                            <TypingIndicator text="正在生成回复" />
+                                        ) : (
+                                            <MessageContent 
+                                                content={message.content} 
+                                                isStreaming={message.isStreaming}
+                                            />
+                                        )
+                                    )}
                                 </div>
                                 <div className="message-time">{formatTime(message.timestamp)}</div>
                             </div>
@@ -242,7 +286,21 @@ const Chat: React.FC = () => {
                     ))}
                     {isLoading && (
                         <div className="message assistant fade-in">
-                            {/* ... Typing Indicator ... */}
+                            <div className="message-avatar">
+                                <div className="assistant-avatar">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                        <path
+                                            d="M12 2L2 7v10c0 5.55 3.84 9.74 9 11 5.16-1.26 9-5.45 9-11V7l-10-5z"
+                                            fill="currentColor"
+                                        />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div className="message-content">
+                                <div className="message-text">
+                                    <TypingIndicator text="连接AI助手中" />
+                                </div>
+                            </div>
                         </div>
                     )}
                 </>
