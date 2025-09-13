@@ -8,3 +8,4 @@ __pycache__/
 .env.production.local
 /workspace
 /static
+/app/agent/tools/EGNNkcat

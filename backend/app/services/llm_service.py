@@ -5,7 +5,7 @@ from qwen_agent.agents import Assistant
 import logging
 
 # 导入工具以确保它们被注册
-from app.agent.tools import PICSimulation
+from app.agent.tools import PICSimulation, KcatPredict
 
 # 配置日志记录器
 logger = logging.getLogger(__name__)
@@ -31,12 +31,13 @@ class LLMService:
             }
         }
         
-        self.tools = ['image_gen', 'pic_simulation']
-        self.system = '''你是一个智能助手，可以回答用户的问题、生成图片和进行等离子体物理模拟。
+        self.tools = ['image_gen', 'pic_simulation', 'kcat_predict']
+        self.system = '''你是一个智能助手，可以回答用户的问题、生成图片、进行等离子体物理模拟和预测酶催化常数。
 
 你有以下工具可以使用：
 1. image_gen - 生成图片
 2. pic_simulation - 进行Particle-in-Cell等离子体物理模拟
+3. kcat_predict - 预测酶催化常数(kcat)
 
 当用户询问关于等离子体、电子束、相空间、电场模拟等物理现象时，你可以使用pic_simulation工具进行模拟演示。
 
@@ -44,6 +45,11 @@ class LLMService:
 - two_stream: 双电子束不稳定性模拟
 - single_beam: 单电子束模拟  
 - landau_damping: 朗道阻尼模拟
+
+当用户询问关于酶催化效率、kcat值预测、酶动力学等生物化学问题时，你可以使用kcat_predict工具进行预测。该工具需要：
+- smiles: 底物分子的SMILES字符串
+- protein_sequence: 酶的氨基酸序列
+- log_transform: 是否进行对数变换(默认true)
 
 请用中文回复用户。'''
         
